@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finger Counting</title>
+  </head>
+  <body>
+    <video
+      id="video"
+      width="640"
+      height="480"
+      autoplay
+      style="display: none"
+    ></video>
+
+    <script src="https://cdn.jsdelivr.net/npm/handtrackjs@latest/dist/handtrack.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const video = document.getElementById("video");
+        let body = document.body;
+        // Load the model
+        const modelParams = {
+          flipHorizontal: true, // flip e.g for video
+          maxNumBoxes: 5, // maximum number of boxes to detect
+          iouThreshold: 0.5, // ioU threshold for non-max suppression
+          scoreThreshold: 0.7, // confidence threshold
+        };
+
+        handTrack.load(modelParams).then((model) => {
+          navigator.mediaDevices
+            .getUserMedia({ video: {} })
+            .then((stream) => {
+              video.srcObject = stream;
+              video.addEventListener("loadeddata", () => {
+                setInterval(() => {
+                  model.detect(video).then((predictions) => {
+                    if (predictions.length > 0) {
+                      let lablelsarray = predictions.map((obj) => obj.label);
+                      console.log(lablelsarray);
+                      //
+                      if (lablelsarray.includes("face")) {
+                        body.style.background = "blue";
+                        if (lablelsarray.includes("open")) {
+                          body.style.background = "pink";
+                        }
+                        if (lablelsarray.includes("closed")) {
+                          body.style.background = "green";
+                        }
+                        if (lablelsarray.includes("point")) {
+                          body.style.background = "red";
+                        }
+                      }
+                      if (lablelsarray.includes("open")) {
+                        body.style.background = "pink";
+                      }
+                      if (lablelsarray.includes("closed")) {
+                        body.style.background = "green";
+                      }
+                      if (lablelsarray.includes("point")) {
+                        body.style.background = "red";
+                      }
+                    } else {
+                      body.style.background = "white";
+                    }
+                  });
+                }, 100);
+              });
+            })
+            .catch((error) => {
+              console.error("Error accessing the camera:", error);
+            });
+        });
+      });
+    </script>
+  </body>
+</html>
